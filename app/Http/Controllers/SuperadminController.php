@@ -66,7 +66,10 @@ class SuperadminController extends Controller
             ]);
         } else {
             $users = new User;
-
+            $lastcount = User::count();
+            $countUser = $lastcount + 1;
+            $uid = 'USR-' . str_pad($countUser, 5, '0', STR_PAD_LEFT);
+            $users->display_id = $uid;
             $users->name = $request->input('name');
             $users->email = strtolower($request->input('email'));
             $users->password = Hash::make($request['password']);
@@ -80,18 +83,15 @@ class SuperadminController extends Controller
     }
     public function edituser(Request $request)
     {
-        // dd($request->id);
         $where = array('users.id' => $request->id);
         $user  = User::join('model_has_roles', 'model_id', '=', 'users.id')
             ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
             ->where('users.id', '=', $request->id)
-            ->select('*','users.id as uid','users.name as uname', 'roles.name as rolename')->first();
-        // dd($user);
+            ->select('*', 'users.id as uid', 'users.name as uname', 'roles.name as rolename')->first();
         return Response()->json($user);
     }
     public function updateuser(Request $request)
     {
-        // dd($request->all());
         if (!empty($request->password)) {
             $validator = Validator::make($request->all(), [
                 'name' => ['required', 'string', 'max:255'],
@@ -117,7 +117,6 @@ class SuperadminController extends Controller
             if (!empty($request->password)) {
                 $users->password = $pass;
             }
-            // $users->roles()->sync($request->role_id);
         }
         $users->save();
 
@@ -135,6 +134,83 @@ class SuperadminController extends Controller
         $users->update();
         return response()->json([
             'success' => 'account deleted successfully'
+        ]);
+    }
+    // Roles Function...
+    public function roles()
+    {
+
+        if (request()->ajax()) {
+            return datatables()->of(Role::select('*')->where('remark', '=', '1'))
+                ->addColumn('action',  function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" onClick="editRole(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)" onClick="deleteRole(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-role">Delete</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+        return view('superadmin.role.roles');
+    }
+    public function registerRole(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'role' => ['required', 'string', 'max:255'],
+        ], [
+            'role.required' => 'The role field is required.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $role = new Role();
+            $role->name = $request->input('role');
+            $role->remark = '1';
+            $role->save();
+            return response()->json([
+                'success' => 'account added successfully'
+            ]);
+        }
+    }
+    public function editrole(Request $request)
+    {
+        $role  = Role::where('roles.id', '=', $request->id)->first();
+        return Response()->json($role);
+    }
+    public function updaterole(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'role' => ['required', 'string', 'max:255'],
+       ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $role = Role::find($request->id);
+            $role->name = $request->input('role');
+            $role->save();
+        }
+
+        return response()->json([
+            'success' => 'account updated successfully'
+        ]);
+    }
+    public function deleterole($id)
+    {
+        $role = Role::find($id);
+        $role->remark = "0";
+        $role->update();
+        return response()->json([
+            'success' => 'role deleted successfully'
         ]);
     }
 }
