@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -35,5 +37,30 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+    protected function authenticated(Request $request, $user)
+    {
+
+        $errors = [$this->username() => trans('auth.failed')];
+        $username = $this->username();
+        $credentials = request()->only($username, 'password');
+        // dd($credentials);
+        if ((auth()->user()->position != strtolower($credentials[$username])) && $credentials[$username] != strtolower($credentials[$username])) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->with('error', 'invalid credentials!');
+        } else {
+        }
+        if ($user->hasRole('superadmin')) {
+            return redirect()->route('superadmindashboard');
+        }
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admindashboard');
+        }
+        if ($user->hasRole('user')) {
+            return redirect()->route('userdashboard');
+        }
     }
 }
