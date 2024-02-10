@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">{{ __('User List') }}
                     <div class="mb-2" style="float: right;">
-                        <a class="btn btn-success" onClick="addAccount()" data-bs-toggle="modal" data-bs-target="#exampleModal"> Create User</a>
+                        <a class="btn btn-success" onClick="addAccount()" data-bs-toggle="modal" data-bs-target="#addUserModal"> Create User</a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -44,7 +44,7 @@
             serverSide: true,
             ajax: "{{ route('users') }}",
             columns: [{
-                    data: 'id',
+                    data: 'display_id',
                     name: 'id'
                 },
                 {

@@ -1,6 +1,6 @@
 <!-- Modal-->
 <!-- <div id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left"> -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div role="document" class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -142,7 +142,7 @@
                                 showConfirmButton: false,
                                 timer: 1000
                             });
-                            $('#exampleModal').modal('hide');
+                            $('#addUserModal').modal('hide');
                             var oTable = $('#datatable-crud').dataTable();
                             oTable.fnDraw(false);
                             $('#uid').val('');
@@ -169,7 +169,7 @@
             success: function(res) {
                 console.log(res);
                 $('#exampleModalLabel').html("Edit Account");
-                $('#exampleModal').modal('show');
+                $('#addUserModal').modal('show');
                 $('#uid').val(res.uid);
                 $('#name').val(res.uname);
                 // $('#address').val(res.address);

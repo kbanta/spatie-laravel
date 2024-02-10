@@ -15,6 +15,7 @@ class UsersSeeder extends Seeder
     public function run(): void
     {
         $superadmin = new User();
+        $superadmin->display_id = 'DEV-00001';
         $superadmin->name = 'superadmin';
         $superadmin->email = 'superadmin@superadmin.com';
         $superadmin->password = Hash::make('password');
