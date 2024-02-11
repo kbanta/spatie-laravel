@@ -25,7 +25,7 @@ class SuperadminController extends Controller
     {
 
         if (request()->ajax()) {
-            return datatables()->of(User::select('*')->where('remark', '=', '1'))
+            return datatables()->of(User::select('*')->where('deleted_at', '=', null))
                 ->addColumn('action',  function ($row) {
 
                     $btn = '<a href="javascript:void(0)" onClick="editUser(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
@@ -73,7 +73,6 @@ class SuperadminController extends Controller
             $users->name = $request->input('name');
             $users->email = strtolower($request->input('email'));
             $users->password = Hash::make($request['password']);
-            $users->remark = '1';
             $users->save();
             $users->assignRole($request->role_id);
             return response()->json([
@@ -130,8 +129,7 @@ class SuperadminController extends Controller
     public function deleteuser($id)
     {
         $users = User::find($id);
-        $users->remark = "0";
-        $users->update();
+        $users->delete();
         return response()->json([
             'success' => 'account deleted successfully'
         ]);
@@ -141,7 +139,7 @@ class SuperadminController extends Controller
     {
 
         if (request()->ajax()) {
-            return datatables()->of(Role::select('*')->where('remark', '=', '1'))
+            return datatables()->of(Role::select('*')->where('deleted_at', '=', null))
                 ->addColumn('action',  function ($row) {
 
                     $btn = '<a href="javascript:void(0)" onClick="editRole(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
@@ -172,7 +170,6 @@ class SuperadminController extends Controller
         } else {
             $role = new Role();
             $role->name = $request->input('role');
-            $role->remark = '1';
             $role->save();
             return response()->json([
                 'success' => 'account added successfully'
@@ -207,8 +204,8 @@ class SuperadminController extends Controller
     public function deleterole($id)
     {
         $role = Role::find($id);
-        $role->remark = "0";
-        $role->update();
+        // $role->remark = "0";
+        $role->delete();
         return response()->json([
             'success' => 'role deleted successfully'
         ]);
