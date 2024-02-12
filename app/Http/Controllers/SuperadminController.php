@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -172,7 +173,7 @@ class SuperadminController extends Controller
             $role->name = $request->input('role');
             $role->save();
             return response()->json([
-                'success' => 'account added successfully'
+                'success' => 'role added successfully'
             ]);
         }
     }
@@ -198,16 +199,90 @@ class SuperadminController extends Controller
         }
 
         return response()->json([
-            'success' => 'account updated successfully'
+            'success' => 'role updated successfully'
         ]);
     }
     public function deleterole($id)
     {
         $role = Role::find($id);
-        // $role->remark = "0";
         $role->delete();
         return response()->json([
             'success' => 'role deleted successfully'
+        ]);
+    }
+    // Brands Function...
+    public function brands()
+    {
+
+        if (request()->ajax()) {
+            return datatables()->of(Brand::select('*')->where('deleted_at', '=', null))
+                ->addColumn('action',  function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" onClick="editBrand(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-brand">Delete</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+        return view('superadmin.brand.brands');
+    }
+    public function registerBrand(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'brand' => ['required', 'string', 'max:255'],
+        ], [
+            'brand.required' => 'The brand field is required.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $brand = new Brand();
+            $brand->name = $request->input('brand');
+            $brand->save();
+            return response()->json([
+                'success' => 'brand added successfully'
+            ]);
+        }
+    }
+    public function editbrand(Request $request)
+    {
+        $brand  = Brand::where('brands.id', '=', $request->id)->first();
+        return Response()->json($brand);
+    }
+    public function updatebrand(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'brand' => ['required', 'string', 'max:255'],
+       ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $brand = Brand::find($request->id);
+            $brand->name = $request->input('brand');
+            $brand->save();
+        }
+
+        return response()->json([
+            'success' => 'brand updated successfully'
+        ]);
+    }
+    public function deletebrand($id)
+    {
+        $brand = Brand::find($id);
+        $brand->delete();
+        return response()->json([
+            'success' => 'brand deleted successfully'
         ]);
     }
 }

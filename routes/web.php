@@ -39,4 +39,11 @@ Route::group(['prefix' => 'superadmin/','middleware' => ['role:superadmin']], fu
     Route::patch('/superhome/roles/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updaterole']);
     Route::patch('/superhome/roles/deleterole/{id}', [App\Http\Controllers\SuperadminController::class, 'deleterole'])->name('delete-role');
 
+    //Brand Crud routes
+    Route::get('/superhome/brands', [App\Http\Controllers\SuperadminController::class, 'brands'])->name('brands');
+    Route::post('/superhome/registerBrand', [App\Http\Controllers\SuperadminController::class, 'registerBrand'])->name('registerBrand');
+    Route::get('/superhome/brands/edit/{id}', [App\Http\Controllers\SuperadminController::class, 'editbrand']);
+    Route::patch('/superhome/brands/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updatebrand']);
+    Route::patch('/superhome/brands/deletebrand/{id}', [App\Http\Controllers\SuperadminController::class, 'deletebrand'])->name('delete-brand');
+
 });
