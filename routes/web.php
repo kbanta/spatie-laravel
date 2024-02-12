@@ -23,7 +23,7 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // superadmin routes
-Route::group(['prefix' => 'superadmin/','middleware' => ['role:superadmin']], function () {
+Route::group(['prefix' => 'superadmin/', 'middleware' => ['role:superadmin']], function () {
     Route::get('/superhome', [App\Http\Controllers\SuperadminController::class, 'index'])->name('superadmindashboard');
     // User Crud routes
     Route::get('/superhome/users', [App\Http\Controllers\SuperadminController::class, 'users'])->name('users');
@@ -45,5 +45,12 @@ Route::group(['prefix' => 'superadmin/','middleware' => ['role:superadmin']], fu
     Route::get('/superhome/brands/edit/{id}', [App\Http\Controllers\SuperadminController::class, 'editbrand']);
     Route::patch('/superhome/brands/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updatebrand']);
     Route::patch('/superhome/brands/deletebrand/{id}', [App\Http\Controllers\SuperadminController::class, 'deletebrand'])->name('delete-brand');
+    
+    //Brand Crud routes
+    Route::get('/superhome/categories', [App\Http\Controllers\SuperadminController::class, 'categories'])->name('categories');
+    Route::post('/superhome/registerCategory', [App\Http\Controllers\SuperadminController::class, 'registerCategory'])->name('registerCategory');
+    Route::get('/superhome/categories/edit/{id}', [App\Http\Controllers\SuperadminController::class, 'editcategory']);
+    Route::patch('/superhome/categories/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updatecategory']);
+    Route::patch('/superhome/categories/deletecategory/{id}', [App\Http\Controllers\SuperadminController::class, 'deletecategory'])->name('delete-category');
 
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Brand;
+use App\Models\Category;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -283,6 +284,80 @@ class SuperadminController extends Controller
         $brand->delete();
         return response()->json([
             'success' => 'brand deleted successfully'
+        ]);
+    }
+    // Categories Function...
+    public function categories()
+    {
+        if (request()->ajax()) {
+            return datatables()->of(Category::select('*')->where('deleted_at', '=', null))
+                ->addColumn('action',  function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" onClick="editCategory(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-category">Delete</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+        return view('superadmin.category.categories');
+    }
+    public function registerCategory(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'category' => ['required', 'string', 'max:255'],
+        ], [
+            'category.required' => 'The category field is required.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $category = new Category();
+            $category->name = $request->input('category');
+            $category->save();
+            return response()->json([
+                'success' => 'brand added successfully'
+            ]);
+        }
+    }
+    public function editcategory(Request $request)
+    {
+        $category  = Category::where('categories.id', '=', $request->id)->first();
+        return Response()->json($category);
+    }
+    public function updatecategory(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'category' => ['required', 'string', 'max:255'],
+       ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $category = Category::find($request->id);
+            $category->name = $request->input('category');
+            $category->save();
+        }
+
+        return response()->json([
+            'success' => 'brand updated successfully'
+        ]);
+    }
+    public function deletecategory($id)
+    {
+        $category = Category::find($id);
+        $category->delete();
+        return response()->json([
+            'success' => 'category deleted successfully'
         ]);
     }
 }
