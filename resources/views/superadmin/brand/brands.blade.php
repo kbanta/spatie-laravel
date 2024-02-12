@@ -5,19 +5,18 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('User List') }}
+                <div class="card-header">{{ __('Brand List') }}
                     <div class="mb-2" style="float: right;">
-                        <a class="btn btn-success" onClick="addAccount()" data-bs-toggle="modal" data-bs-target="#addUserModal"> Create User</a>
+                        <a class="btn btn-success" onClick="addBrand()" data-bs-toggle="modal" data-bs-target="#addBrandModal"> Create Brand</a>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-responsive" id="datatable-crud">
+                        <table class="table table-bordered table-responsive" id="datatable-crud-brand">
                             <thead>
                                 <tr>
                                     <th>Id</th>
                                     <th>Name</th>
-                                    <th>Email</th>
                                     <th>Created at</th>
                                     <th>Action</th>
                                 </tr>
@@ -31,7 +30,7 @@
         </div>
     </div>
 </div>
-@include('superadmin.account.user_modal_form')
+@include('superadmin.brand.brand_modal_form')
 <script type="text/javascript">
     $(document).ready(function() {
         $.ajaxSetup({
@@ -39,21 +38,17 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-        $('#datatable-crud').DataTable({
+        $('#datatable-crud-brand').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('users') }}",
+            ajax: "{{ route('brands') }}",
             columns: [{
-                    data: 'display_id',
+                    data: 'id',
                     name: 'id'
                 },
                 {
                     data: 'name',
                     name: 'name'
-                },
-                {
-                    data: 'email',
-                    name: 'email'
                 },
                 {
                     data: 'created_at',
@@ -74,7 +69,7 @@
             ]
         });
 
-        $('body').on('click', '.delete', function(e) {
+        $('body').on('click', '.delete-brand', function(e) {
             e.preventDefault(); // Prevent default link action
 
             var deleteUrl = $(this).attr('href'); // Get the delete URL from the button's href attribute
@@ -95,13 +90,13 @@
                     // ajax
                     $.ajax({
                         type: "PATCH",
-                        url: "users/deleteuser/" + id,
+                        url: "brands/deletebrand/" + id,
                         data: {
                             id: id
                         },
                         dataType: 'json',
                         success: function(res) {
-                            var oTable = $('#datatable-crud').dataTable();
+                            var oTable = $('#datatable-crud-brand').dataTable();
                             oTable.fnDraw(false);
                             Swal.fire({
                                 position: 'center',
