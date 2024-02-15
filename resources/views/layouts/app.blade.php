@@ -55,11 +55,11 @@
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                 <a class="nav-link" href="{{ route('products') }}">{{ __('Products') }}</a>
                                 <a class="nav-link" href="{{ route('product_type') }}">{{ __('Product Type') }}</a>
-                                <a class="nav-link" href="{{ route('products') }}">{{ __('Product Family') }}</a>
+                                <a class="nav-link" href="{{ route('product_family') }}">{{ __('Product Family') }}</a>
                                 <a class="nav-link" href="{{ route('categories') }}">{{ __('Category') }}</a>
                                 <a class="nav-link" href="{{ route('brands') }}">{{ __('Brand') }}</a>
-                                <a class="nav-link" href="{{ route('products') }}">{{ __('Color') }}</a>
-                                <a class="nav-link" href="{{ route('products') }}">{{ __('Sizes') }}</a>
+                                <a class="nav-link" href="{{ route('colors') }}">{{ __('Color') }}</a>
+                                <a class="nav-link" href="{{ route('sizes') }}">{{ __('Sizes') }}</a>
                             </div>
                         </li>
                         <!-- Authentication Links -->

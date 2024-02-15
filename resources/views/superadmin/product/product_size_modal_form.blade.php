@@ -1,5 +1,5 @@
 <!-- Modal-->
-<div class="modal fade" id="addProductFamilyModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+<div class="modal fade" id="addSizeModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
     <div role="document" class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -11,14 +11,14 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <input type="hidden" id="mode" name="mode" class="form-control" />
-                        <input type="hidden" id="fid" name="fid" class="form-control" />
+                        <input type="hidden" id="sid" name="sid" class="form-control" />
                     </div>
                     <div class="form-group">
-                        <label>Product Family</label>
-                        <input autocomplete="off" type="text" id="product_family" name="product_family" value="{{ old('name') }}" class="product_family form-control" placeholder="Product Family">
+                        <label>Product Size</label>
+                        <input autocomplete="off" type="text" id="size" name="size" value="{{ old('name') }}" class="size form-control" placeholder="Product Size">
                         <span class="glyphicon glyphicon-user form-control-feedback"></span>
                         <span class="text-danger">
-                            <strong id="product_family-error"></strong>
+                            <strong id="size-error"></strong>
                         </span>
                     </div>
                     <div class="modal-footer">
@@ -31,11 +31,11 @@
     </div>
 </div>
 <script>
-    function addProductFamily() {
+    function addSize() {
         $('#mode').val(0);
-        $('#fid').val('');
-        $('#product_family').val('');
-        $('#modalTitle').html("Create Product Family");
+        $('#sid').val('');
+        $('#size').val('');
+        $('#modalTitle').html("Create Product Size");
     }
     //Saving Process...
     $('#createForm').on('submit', function(e) {
@@ -47,14 +47,14 @@
         });
         var mode = parseInt($('#mode').val());
         if (mode === 0) {
-            var title = 'Create Product Family';
+            var title = 'Create Product Size';
             var method = 'POST';
-            var url = "{{route('registerProductFamily')}}";
+            var url = "{{route('registerSize')}}";
         } else {
-            var id = $('#fid').val();
-            var title = 'Update Product Family';
+            var id = $('#sid').val();
+            var title = 'Update Product Size';
             var method = 'PATCH';
-            var url = "product_family/update/" + id;
+            var url = "sizes/update/" + id;
         }
         Swal.fire({
             title: title,
@@ -74,8 +74,8 @@
                     success: function(response) {
                         console.log(response);
                         if (response.errors) {
-                            if (response.errors.product_family) {
-                                $('#product_family-error').html(response.errors.product_family[0]);
+                            if (response.errors.size) {
+                                $('#size-error').html(response.errors.size[0]);
                             }
                         }
                         if (response.success) {
@@ -86,11 +86,11 @@
                                 showConfirmButton: false,
                                 timer: 1000
                             });
-                            $('#addProductFamilyModal').modal('hide');
-                            var oTable = $('#datatable-crud-product-family').dataTable();
+                            $('#addSizeModal').modal('hide');
+                            var oTable = $('#datatable-crud-size').dataTable();
                             oTable.fnDraw(false);
-                            $('#fid').val('');
-                            $('#product_family').val('');
+                            $('#sid').val('');
+                            $('#size').val('');
                         }
                     },
                 });
@@ -98,20 +98,20 @@
         });
     });
     //edit
-    function editProductFamily(id) {
+    function editSize(id) {
         $.ajax({
             type: "GET",
-            url: "product_family/edit/" + id,
+            url: "sizes/edit/" + id,
             data: {
                 id: id
             },
             dataType: 'json',
             success: function(res) {
                 console.log(res);
-                $('#modalTitle').html("Edit Product Family");
-                $('#addProductFamilyModal').modal('show');
-                $('#fid').val(res.id);
-                $('#product_family').val(res.family_name);
+                $('#modalTitle').html("Edit Product Size");
+                $('#addSizeModal').modal('show');
+                $('#sid').val(res.id);
+                $('#size').val(res.size);
                 $('#mode').val(1);
             }
         });
