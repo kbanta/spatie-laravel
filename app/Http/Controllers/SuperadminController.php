@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Family;
 use App\Models\Product;
 use App\Models\ProductType;
 use App\Models\User;
@@ -405,8 +406,8 @@ class SuperadminController extends Controller
     }
     public function editproduct_type(Request $request)
     {
-        $category  = ProductType::where('product_types.id', '=', $request->id)->first();
-        return Response()->json($category);
+        $prodtype  = ProductType::where('product_types.id', '=', $request->id)->first();
+        return Response()->json($prodtype);
     }
     public function updateproduct_type(Request $request)
     {
@@ -419,9 +420,9 @@ class SuperadminController extends Controller
                 'errors' => $validator->errors(),
             ]);
         } else {
-            $category = ProductType::find($request->id);
-            $category->type_name = $request->input('product_type');
-            $category->save();
+            $prodtype = ProductType::find($request->id);
+            $prodtype->type_name = $request->input('product_type');
+            $prodtype->save();
         }
 
         return response()->json([
@@ -430,10 +431,84 @@ class SuperadminController extends Controller
     }
     public function deleteproduct_type($id)
     {
-        $category = ProductType::find($id);
-        $category->delete();
+        $prodtype = ProductType::find($id);
+        $prodtype->delete();
         return response()->json([
-            'success' => 'category deleted successfully'
+            'success' => 'prodtype deleted successfully'
+        ]);
+    }
+    // Products FAmily Function...
+    public function product_family()
+    {
+        if (request()->ajax()) {
+            return datatables()->of(Family::select('*')->where('deleted_at', '=', null))
+                ->addColumn('action',  function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" onClick="editProductType(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-product-type">Delete</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+        return view('superadmin.product.product_family');
+    }
+    public function registerProductFamily(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_family' => ['required', 'string', 'max:255'],
+        ], [
+            'product_family.required' => 'The product_family field is required.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $product_family = new Family();
+            $product_family->family_name = $request->input('product_family');
+            $product_family->save();
+            return response()->json([
+                'success' => 'product family added successfully'
+            ]);
+        }
+    }
+    public function editproduct_family(Request $request)
+    {
+        $prodfamily  = Family::where('families.id', '=', $request->id)->first();
+        return Response()->json($prodfamily);
+    }
+    public function updateproduct_family(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_family' => ['required', 'string', 'max:255'],
+       ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $prodfamily = Family::find($request->id);
+            $prodfamily->family_name = $request->input('product_family');
+            $prodfamily->save();
+        }
+
+        return response()->json([
+            'success' => 'brand updated successfully'
+        ]);
+    }
+    public function deleteproduct_family($id)
+    {
+        $profamily = Family::find($id);
+        $profamily->delete();
+        return response()->json([
+            'success' => 'prod family deleted successfully'
         ]);
     }
 

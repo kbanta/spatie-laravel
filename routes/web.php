@@ -64,4 +64,11 @@ Route::group(['prefix' => 'superadmin/', 'middleware' => ['role:superadmin']], f
     Route::patch('/superhome/product_type/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updateproduct_type']);
     Route::patch('/superhome/product_type/deleteproduct_type/{id}', [App\Http\Controllers\SuperadminController::class, 'deleteproduct_type'])->name('delete-product_type');
 
+    //Product Family Crud routes
+    Route::get('/superhome/product_family', [App\Http\Controllers\SuperadminController::class, 'product_family'])->name('product_family');
+    Route::post('/superhome/registerProductType', [App\Http\Controllers\SuperadminController::class, 'registerProductFamily'])->name('registerProductFamily');
+    Route::get('/superhome/product_family/edit/{id}', [App\Http\Controllers\SuperadminController::class, 'editproduct_family']);
+    Route::patch('/superhome/product_family/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updateproduct_family']);
+    Route::patch('/superhome/product_family/deleteproduct_family/{id}', [App\Http\Controllers\SuperadminController::class, 'deleteproduct_family'])->name('delete-product_family');
+
 });
