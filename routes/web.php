@@ -66,9 +66,16 @@ Route::group(['prefix' => 'superadmin/', 'middleware' => ['role:superadmin']], f
 
     //Product Family Crud routes
     Route::get('/superhome/product_family', [App\Http\Controllers\SuperadminController::class, 'product_family'])->name('product_family');
-    Route::post('/superhome/registerProductType', [App\Http\Controllers\SuperadminController::class, 'registerProductFamily'])->name('registerProductFamily');
+    Route::post('/superhome/registerProductFamily', [App\Http\Controllers\SuperadminController::class, 'registerProductFamily'])->name('registerProductFamily');
     Route::get('/superhome/product_family/edit/{id}', [App\Http\Controllers\SuperadminController::class, 'editproduct_family']);
     Route::patch('/superhome/product_family/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updateproduct_family']);
     Route::patch('/superhome/product_family/deleteproduct_family/{id}', [App\Http\Controllers\SuperadminController::class, 'deleteproduct_family'])->name('delete-product_family');
+
+    //Product Family Crud routes
+    Route::get('/superhome/colors', [App\Http\Controllers\SuperadminController::class, 'colors'])->name('colors');
+    Route::post('/superhome/registerColor', [App\Http\Controllers\SuperadminController::class, 'registerColor'])->name('registerColor');
+    Route::get('/superhome/colors/edit/{id}', [App\Http\Controllers\SuperadminController::class, 'editcolor']);
+    Route::patch('/superhome/colors/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updatecolor']);
+    Route::patch('/superhome/colors/deletecolor/{id}', [App\Http\Controllers\SuperadminController::class, 'deletecolor'])->name('delete-color');
 
 });
