@@ -8,6 +8,7 @@ use App\Models\Color;
 use App\Models\Family;
 use App\Models\Product;
 use App\Models\ProductType;
+use App\Models\Size;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -191,7 +192,7 @@ class SuperadminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'role' => ['required', 'string', 'max:255'],
-       ]);
+        ]);
         if ($validator->fails()) {
             return response()->json([
                 'status' => 400,
@@ -266,7 +267,7 @@ class SuperadminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'brand' => ['required', 'string', 'max:255'],
-       ]);
+        ]);
         if ($validator->fails()) {
             return response()->json([
                 'status' => 400,
@@ -340,7 +341,7 @@ class SuperadminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'category' => ['required', 'string', 'max:255'],
-       ]);
+        ]);
         if ($validator->fails()) {
             return response()->json([
                 'status' => 400,
@@ -414,7 +415,7 @@ class SuperadminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'product_type' => ['required', 'string', 'max:255'],
-       ]);
+        ]);
         if ($validator->fails()) {
             return response()->json([
                 'status' => 400,
@@ -488,7 +489,7 @@ class SuperadminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'product_family' => ['required', 'string', 'max:255'],
-       ]);
+        ]);
         if ($validator->fails()) {
             return response()->json([
                 'status' => 400,
@@ -587,7 +588,7 @@ class SuperadminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'color' => ['required', 'string', 'max:255'],
-       ]);
+        ]);
         if ($validator->fails()) {
             return response()->json([
                 'status' => 400,
@@ -600,13 +601,87 @@ class SuperadminController extends Controller
         }
 
         return response()->json([
-            'success' => 'brand updated successfully'
+            'success' => 'color updated successfully'
         ]);
     }
     public function deletecolor($id)
     {
         $color = Color::find($id);
         $color->delete();
+        return response()->json([
+            'success' => 'color deleted successfully'
+        ]);
+    }
+    // Products Colors Function...
+    public function sizes()
+    {
+        if (request()->ajax()) {
+            return datatables()->of(Size::select('*')->where('deleted_at', '=', null))
+                ->addColumn('action',  function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" onClick="editSize(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-size">Delete</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+        return view('superadmin.product.product_sizes');
+    }
+    public function registerSize(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'size' => ['required', 'string', 'max:255'],
+        ], [
+            'size.required' => 'The size field is required.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $size = new Size();
+            $size->size = $request->input('size');
+            $size->save();
+            return response()->json([
+                'success' => 'size added successfully'
+            ]);
+        }
+    }
+    public function editsize(Request $request)
+    {
+        $size  = Size::where('sizes.id', '=', $request->id)->first();
+        return Response()->json($size);
+    }
+    public function updatesize(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'size' => ['required', 'string', 'max:255'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $size = Size::find($request->id);
+            $size->size = $request->input('size');
+            $size->save();
+        }
+
+        return response()->json([
+            'success' => 'size updated successfully'
+        ]);
+    }
+    public function deletesize($id)
+    {
+        $size = Size::find($id);
+        $size->delete();
         return response()->json([
             'success' => 'prod family deleted successfully'
         ]);
