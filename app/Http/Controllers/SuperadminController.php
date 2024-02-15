@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Product;
+use App\Models\ProductType;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -359,5 +361,103 @@ class SuperadminController extends Controller
         return response()->json([
             'success' => 'category deleted successfully'
         ]);
+    }
+    // Products Type Function...
+    public function product_type()
+    {
+        if (request()->ajax()) {
+            return datatables()->of(ProductType::select('*')->where('deleted_at', '=', null))
+                ->addColumn('action',  function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" onClick="editProductType(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-product-type">Delete</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+        return view('superadmin.product.product_types');
+    }
+    public function registerProductType(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_type' => ['required', 'string', 'max:255'],
+        ], [
+            'product_type.required' => 'The product_type field is required.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $product_type = new ProductType();
+            $product_type->type_name = $request->input('product_type');
+            $product_type->save();
+            return response()->json([
+                'success' => 'brand added successfully'
+            ]);
+        }
+    }
+    public function editproduct_type(Request $request)
+    {
+        $category  = ProductType::where('product_types.id', '=', $request->id)->first();
+        return Response()->json($category);
+    }
+    public function updateproduct_type(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_type' => ['required', 'string', 'max:255'],
+       ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $category = ProductType::find($request->id);
+            $category->type_name = $request->input('product_type');
+            $category->save();
+        }
+
+        return response()->json([
+            'success' => 'brand updated successfully'
+        ]);
+    }
+    public function deleteproduct_type($id)
+    {
+        $category = ProductType::find($id);
+        $category->delete();
+        return response()->json([
+            'success' => 'category deleted successfully'
+        ]);
+    }
+
+    // Products Function...
+    public function products()
+    {
+        if (request()->ajax()) {
+            return datatables()->of(Product::select('*')->where('deleted_at', '=', null))
+                ->addColumn('action',  function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" onClick="editCategory(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-category">Delete</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+        return view('superadmin.product.products');
+    }
+    public function productForm()
+    {
+        return view('superadmin.product.product_form');
     }
 }
