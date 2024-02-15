@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Color;
 use App\Models\Family;
 use App\Models\Product;
 use App\Models\ProductType;
@@ -444,7 +445,7 @@ class SuperadminController extends Controller
             return datatables()->of(Family::select('*')->where('deleted_at', '=', null))
                 ->addColumn('action',  function ($row) {
 
-                    $btn = '<a href="javascript:void(0)" onClick="editProductType(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+                    $btn = '<a href="javascript:void(0)" onClick="editProductFamily(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
 
                     $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-product-type">Delete</a>';
 
@@ -534,5 +535,80 @@ class SuperadminController extends Controller
     public function productForm()
     {
         return view('superadmin.product.product_form');
+    }
+
+    // Products Colors Function...
+    public function colors()
+    {
+        if (request()->ajax()) {
+            return datatables()->of(Color::select('*')->where('deleted_at', '=', null))
+                ->addColumn('action',  function ($row) {
+
+                    $btn = '<a href="javascript:void(0)" onClick="editColor(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+
+                    $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-color">Delete</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+        return view('superadmin.product.product_colors');
+    }
+    public function registerColor(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'color' => ['required', 'string', 'max:255'],
+        ], [
+            'color.required' => 'The color field is required.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $color = new Color();
+            $color->color = $request->input('color');
+            $color->save();
+            return response()->json([
+                'success' => 'product family added successfully'
+            ]);
+        }
+    }
+    public function editcolor(Request $request)
+    {
+        $color  = Color::where('colors.id', '=', $request->id)->first();
+        return Response()->json($color);
+    }
+    public function updatecolor(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'color' => ['required', 'string', 'max:255'],
+       ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $color = Color::find($request->id);
+            $color->color = $request->input('color');
+            $color->save();
+        }
+
+        return response()->json([
+            'success' => 'brand updated successfully'
+        ]);
+    }
+    public function deletecolor($id)
+    {
+        $color = Color::find($id);
+        $color->delete();
+        return response()->json([
+            'success' => 'prod family deleted successfully'
+        ]);
     }
 }
