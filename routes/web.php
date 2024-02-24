@@ -56,6 +56,11 @@ Route::group(['prefix' => 'superadmin/', 'middleware' => ['role:superadmin']], f
     //Product Crud routes
     Route::get('/superhome/products', [App\Http\Controllers\SuperadminController::class, 'products'])->name('products');
     Route::get('/superhome/products/productForm', [App\Http\Controllers\SuperadminController::class, 'productForm'])->name('productForm');
+    Route::post('/superhome/products/productFormSave', [App\Http\Controllers\SuperadminController::class, 'productFormSave'])->name('productFormSave');
+    Route::get('/superhome/products/edit/{id}', [App\Http\Controllers\SuperadminController::class, 'editproduct']);
+    Route::post('/superhome/products/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updateproduct']);
+    Route::patch('/superhome/products/deleteproduct/{id}', [App\Http\Controllers\SuperadminController::class, 'deleteproduct'])->name('delete-product');
+
 
     //Product Type Crud routes
     Route::get('/superhome/product_type', [App\Http\Controllers\SuperadminController::class, 'product_type'])->name('product_type');
@@ -85,4 +90,7 @@ Route::group(['prefix' => 'superadmin/', 'middleware' => ['role:superadmin']], f
     Route::patch('/superhome/sizes/update/{id}', [App\Http\Controllers\SuperadminController::class, 'updatesize']);
     Route::patch('/superhome/sizes/deletesize/{id}', [App\Http\Controllers\SuperadminController::class, 'deletesize'])->name('delete-size');
 
+});
+Route::group(['prefix' => 'app/', 'middleware' => ['role:user']], function () {
+    Route::get('/userhome', [App\Http\Controllers\UserController::class, 'index'])->name('userdashboard');
 });
