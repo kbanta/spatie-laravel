@@ -42,10 +42,10 @@
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
                         @role('superadmin')
-                            @include('layouts.superadmin_sidebar')
+                        @include('layouts.superadmin_sidebar')
                         @endrole
                         @role('user')
-                            @include('layouts.user_sidebar')
+                        @include('layouts.user_sidebar')
                         @endrole
                         <!-- Authentication Links -->
                         @guest
@@ -85,6 +85,8 @@
 
         <main class="py-4">
             @yield('content')
+            @include('cart_canvass')
+
         </main>
     </div>
     <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>

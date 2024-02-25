@@ -93,4 +93,6 @@ Route::group(['prefix' => 'superadmin/', 'middleware' => ['role:superadmin']], f
 });
 Route::group(['prefix' => 'app/', 'middleware' => ['role:user']], function () {
     Route::get('/userhome', [App\Http\Controllers\UserController::class, 'index'])->name('userdashboard');
+    Route::get('/userhome/products', [App\Http\Controllers\UserController::class, 'products'])->name('store');
+
 });
