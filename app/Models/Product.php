@@ -39,4 +39,8 @@ class Product extends Model
     public function price() {
         return $this->hasMany(Price::class);
     }
+    public function noImage()
+    {
+        return 'no-image-2.png';
+    }
 }

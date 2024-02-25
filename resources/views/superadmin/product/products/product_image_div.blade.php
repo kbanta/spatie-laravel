@@ -23,7 +23,7 @@
                         <input type="hidden" id="images_main_holder" name="images_main_holder" value="{{empty($product->url) ? '' : $product->url}}">
                         <img src="{{ Storage::url('product_images/' . $product->url) }}" class="images-preview-div-main-holder" alt="Image Preview" style="width: 250px;height: auto; border: 2px dashed #cacaca;">
                         @else
-                        <img src="{{ '/storage/product_images/no-image-2.png' }}" class="images-preview-div-additional-holder" alt="Image Preview" style="width: 250px;height: auto; border: 2px dashed #cacaca;">
+                        <img src="{{ '/storage/product_images/no-image-2.png' }}" class="images-preview-div-main-no-image" alt="Image Preview" style="width: 250px;height: auto; border: 2px dashed #cacaca;">
                         @endif
                     </div>
                 </div>
@@ -74,6 +74,7 @@
                     reader.onload = function(event) {
                         $(imgPreviewPlaceholder).empty(); // Clear previous image
                         $('.images-preview-div-main-holder').hide();
+                        $('.images-preview-div-main-no-image').hide();
                         $($.parseHTML('<img>')).attr('src', event.target.result)
                             .attr('width', '250px') // Add width attribute
                             .attr('height', 'auto') // Add height attribute
