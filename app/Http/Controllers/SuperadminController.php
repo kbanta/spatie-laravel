@@ -6,7 +6,10 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Family;
+use App\Models\Image;
+use App\Models\Price;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\ProductType;
 use App\Models\Size;
 use App\Models\User;
@@ -14,6 +17,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
@@ -515,29 +519,248 @@ class SuperadminController extends Controller
     }
 
     // Products Function...
-    public function products()
+    public function products(Request $request)
     {
-        if (request()->ajax()) {
-            return datatables()->of(Product::select('*')->where('deleted_at', '=', null))
-                ->addColumn('action',  function ($row) {
+        if ($request->ajax()) {
+            $data = Product::select('products.id as pid', 'products.name', 'images.url', 'products.sku')
+                ->leftJoin('prices', 'products.id', '=', 'prices.product_id')
+                ->leftJoin('images', 'products.id', '=', 'images.product_id')
+                ->whereNull('products.deleted_at')
+                ->groupBy('products.id', 'products.name', 'images.url', 'products.sku')
+                ->get();
 
-                    $btn = '<a href="javascript:void(0)" onClick="editCategory(' . $row->id . ')" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+            // Map the image filename to its URL using the Storage facade
+            $data->transform(function ($item) {
+                // Check if the url property is empty or null
+                if (!empty($item->url)) {
+                    $item->url = Storage::url('product_images/' . $item->url);
+                } else {
+                    $item->url = '/storage/product_images/no-image.png'; // Replace 'default_image_url.jpg' with your default image URL
+                }
+                return $item;
+            });
 
-                    $btn = $btn . ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-category">Delete</a>';
-
+            return datatables()->of($data)
+                ->addColumn('action', function ($row) {
+                    $editUrl = url('superadmin/superhome/products/edit/' . $row->pid);
+                    $btn = '<a href="' . $editUrl . '" data-toggle="tooltip" data-id="' . $row->pid . '" data-original-title="Edit" class="edit btn btn-primary btn-sm">Edit</a>';
+                    $btn .= ' <a href="javascript:void(0)"  data-toggle="tooltip"  data-id="' . $row->pid . '" data-original-title="Delete" class="btn btn-danger btn-sm delete-product">Delete</a>';
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->addIndexColumn()
                 ->make(true);
         }
-        return view('superadmin.product.products');
+        return view('superadmin.product.products.products');
     }
-    public function productForm()
+    public function productForm(Request $request)
     {
-        return view('superadmin.product.product_form');
+        $brand = Brand::all();
+        $category = Category::all();
+        $family = Family::all();
+        $prod_type = ProductType::all();
+        $color = Color::all();
+        $size = Size::all();
+        return view('superadmin.product.products.product_form', compact('brand', 'category', 'family', 'prod_type', 'color', 'size'));
     }
+    public function productFormSave(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'images-main.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validate images-main only
+            'product_type_id' => ['required'],
+            'family_id' => ['required'],
+            'brand_id' => ['required'],
+            'category_id' => ['required'],
+            'product_name' => ['required'],
+            'description' => ['required'],
+            'sku' => ['required'],
+            'product_quantity' => ['required'],
+            'price' => ['required'],
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            try {
+                $cnt_product = Product::max('id') + 1;
+                // Create the product
+                $product = Product::create([
+                    'type_id' => $request->product_type_id,
+                    'family_id' => $request->family_id,
+                    'brand_id' => $request->brand_id,
+                    'category_id' => $request->category_id,
+                    'name' => $request->product_name,
+                    'description' => $request->description,
+                    'sku' => $request->sku,
+                    'inventory' => $request->product_quantity,
+                    'color_id' => $request->color_id,
+                    'size_id' => $request->size_id,
+                    'weight' => $request->weight,
+                    'dimension' => $request->dimension,
+                ]);
+
+                // Get the ID of the newly created product
+                $newProductId = $product->id;
+
+                Price::create([
+                    'product_id' => $newProductId,
+                    'price' => $request->price,
+                    'cost' => $request->cost,
+                    'discount' => $request->discount,
+                    'special_price_start' => $request->special_price_start,
+                    'special_price_end' => $request->special_price_end,
+                ]);
+
+                if ($request->hasFile('images-main')) {
+                    $image = $request->file('images-main');
+                    // foreach ($request->file('images-main') as $image) {
+                    // Process and store each image
+                    $fileName = time() . rand(111, 9999) . '.' . $image->getClientOriginalExtension();
+                    // $imagePath = $image->storeAs('product_images', $fileName); // This line stores the image in the "product_images" folder
+                    Storage::disk('product_images')->put($fileName, file_get_contents($image));
+                    // Save image info to database
+                    Image::create([
+                        'product_id' => $cnt_product,
+                        'url' => $fileName,
+                    ]);
+                    // }
+                }
+                if ($request->hasFile('images-additional')) {
+                    foreach ($request->file('images-additional') as $images) {
+                        // dd($images)
+                        // Process and store each image
+                        $fileNames = time() . rand(111, 9999) . '.' . $images->getClientOriginalExtension();
+                        // $imagePath = $images->storeAs('product_images', $fileName); // This line stores the images in the "product_images" folder
+                        Storage::disk('product_images')->put($fileNames, file_get_contents($images));
+                        // Save images info to database
+                        ProductImage::create([
+                            'product_id' => $cnt_product,
+                            'url' => $fileNames,
+                        ]);
+                    }
+                }
+            } catch (Exception $e) {
+                return response()->json([
+                    'error' => 'error inserting'
+                ]);
+            }
+            // Optionally, you can return a success response
+            return response()->json([
+                'success' => 'product updated successfully'
+            ]);
+        }
+    }
+    public function editproduct(Request $request)
+    {
+        $product  = Product::leftjoin('prices', 'products.id', '=', 'prices.product_id')
+            ->leftjoin('images', 'products.id', '=', 'images.product_id')
+            // ->leftjoin('product_images','products.id','=','product_images.product_id')
+            ->select('*', 'images.url as main_image', 'products.id as id')
+            ->where('products.id', '=', $request->id)
+            ->whereNull('images.deleted_at')
+            ->first();
+        $prod_add_image = Product::join('product_images', 'products.id', '=', 'product_images.product_id')
+            ->select('product_images.url')
+            ->where('products.id', '=', $request->id)
+            ->whereNull('product_images.deleted_at')
+            ->get()->toArray();
+        // dd($product);
+        $brand = Brand::all();
+        $category = Category::all();
+        $family = Family::all();
+        $prod_type = ProductType::all();
+        $color = Color::all();
+        $size = Size::all();
+        return view('superadmin.product.products.product_form', compact('prod_add_image', 'product', 'brand', 'category', 'family', 'prod_type', 'color', 'size'));
+    }
+    public function updateproduct(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), []);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        } else {
+            $product = Product::where(['id' => $request->id])->first();
+            $product->update([
+                'type_id' => $request->product_type_id,
+                'family_id' => $request->family_id,
+                'brand_id' => $request->brand_id,
+                'category_id' => $request->category_id,
+                'name' => $request->product_name,
+                'description' => $request->description,
+                'sku' => $request->sku,
+                'inventory' => $request->product_quantity,
+                'color_id' => $request->color_id,
+                'size_id' => $request->size_id,
+                'weight' => $request->weight,
+                'dimension' => $request->dimension,
+            ]);
+            // $product->save();
+            $price = Price::where(['product_id' => $request->id])->first();
+            $price->update([
+                'price' => $request->price,
+                'cost' => $request->cost,
+                'discount' => $request->discount,
+                'special_price_start' => $request->special_price_start,
+                'special_price_end' => $request->special_price_end,
+            ]);
+            // $price->save();
+            if ($request->hasFile('images-main')) {
+                $image = $request->file('images-main'); //selected image..
+                $chkimage = Image::where([
+                    'product_id' => $request->id,
+                ])->first();
+                $fileName = time() . rand(111, 9999) . '.' . $image->getClientOriginalExtension();
+                Storage::disk('product_images')->put($fileName, file_get_contents($image));
+                if ($chkimage == null) {
+                    Image::create([
+                        'product_id' => $request->id,
+                        'url' => $fileName,
+                    ]);
+                } else {
+                    $chkimage->update([
+                        'product_id' => $request->id,
+                        'url' => $fileName,
+                    ]);
+                }
+            }
+
+            if ($request->hasFile('images-additional')) {
+                if (!empty($request->images_additional_holder)) {
+                    foreach ($request->images_additional_holder as $image_old) {
+                        ProductImage::where('product_id', $request->id)
+                            ->whereNull('deleted_at')
+                            ->delete();
+                    }
+                }
+                foreach ($request->file('images-additional') as $images) {
+                    $fileNames = time() . rand(111, 9999) . '.' . $images->getClientOriginalExtension();
+                    Storage::disk('product_images')->put($fileNames, file_get_contents($images));
+                    ProductImage::create([
+                        'product_id' => $request->id,
+                        'url' => $fileNames,
+                    ]);
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => 'product updated successfully'
+        ]);
+    }
+    public function deleteproduct($id)
+    {
+        $product = Product::find($id);
+        $product->delete();
+        return response()->json([
+            'success' => 'product deleted successfully'
+        ]);
+    }
     // Products Colors Function...
     public function colors()
     {
