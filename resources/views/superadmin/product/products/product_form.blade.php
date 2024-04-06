@@ -15,7 +15,7 @@
                         @csrf
                         <div class="row">
                             <div class="form-group">
-                                <input type="hidden" id="mode" name="mode" class="form-control" value="{{empty($product->id) ? '' : 1}}"/>
+                                <input type="hidden" id="mode" name="mode" class="form-control" value="{{empty($product->id) ? '' : 1}}" />
                                 <input type="hidden" id="pid" name="pid" class="form-control" value="{{empty($product->id) ? '' : $product->id}}" />
                             </div>
                             <div class="form-group">
@@ -112,26 +112,40 @@
                                 </span>
                             </div>
                             <div class="form-group">
-                                <label>Color</label>
-                                <select name="color_id" id="color_id" class="color_id form-control">
+                                <label>Color</label><br>
+                                <!-- <select name="color_id" id="color_id" class="color_id form-control">
                                     <option value="" disabled selected>Select Color</option>
                                     @foreach($color as $colors)
                                     <option value="{{$colors->id}}" {{ !empty($product->color_id) && $product->color_id == $colors->id ? 'selected' : '' }}>{{$colors->color}}</option>
                                     @endforeach
-                                </select>
+                                </select> -->
+                                @foreach($color as $colors)
+                                    <div class="form-check form-check-inline">
+                                        <input type="checkbox" name="color_id[]" id="color_{{$colors->id}}" value="{{$colors->id}}" class="color_id form-check-input"
+                                            @if(isset($colorArray) && in_array($colors->id, $colorArray)) checked @endif>
+                                        <label for="color_{{$colors->id}}" class="form-check-label">{{$colors->color}}</label>
+                                    </div>
+                                @endforeach
                                 <span class="glyphicon glyphicon-user form-control-feedback"></span>
                                 <span class="text-danger">
                                     <strong id="color_id-error"></strong>
                                 </span>
                             </div>
                             <div class="form-group">
-                                <label>Size</label>
-                                <select name="size_id" id="size_id" class="size_id form-control">
+                                <label>Size</label><br>
+                                <!-- <select name="size_id" id="size_id" class="size_id form-control">
                                     <option value="" disabled selected>Select Size</option>
                                     @foreach($size as $sizies)
                                     <option value="{{$sizies->id}}" {{ !empty($product->size_id) && $product->size_id == $sizies->id ? 'selected' : '' }}>{{$sizies->size}}</option>
                                     @endforeach
-                                </select>
+                                </select> -->
+                                @foreach($size as $sizies)
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" name="size_id[]" id="size_{{$sizies->id}}" value="{{$sizies->id}}" class="size_id form-check-input"
+                                    @if(isset($sizeArray) && in_array($sizies->id, $sizeArray)) checked @endif>
+                                    <label for="size_{{$sizies->id}}" class="form-check-label">{{$sizies->size}}</label>
+                                </div>
+                                @endforeach
                                 <span class="glyphicon glyphicon-user form-control-feedback"></span>
                                 <span class="text-danger">
                                     <strong id="size_id-error"></strong>
@@ -173,7 +187,7 @@
                             <label>Price</label>
                             <div class="input-group flex-nowrap">
                                 <span class="input-group-text" id="addon-wrapping">$</span>
-                                <input autocomplete="off" type="number" id="price" name="price" value="{{empty($product->price) ? '' : $product->price}}" class="price form-control" placeholder="00.00" style="font-weight: bold;">
+                                <input autocomplete="off" type="text" id="price" name="price" value="{{empty($product->price) ? '' : $product->price}}" class="price form-control" placeholder="00.00" style="font-weight: bold;">
                                 <span class="glyphicon glyphicon-user form-control-feedback"></span>
                                 <span class="text-danger">
                                     <strong id="price-error"></strong>
@@ -236,13 +250,13 @@
 </div>
 <script type="text/javascript">
     //Saving Process...
-    
+
     // Get references to HTML elements
     const type_id = document.getElementById('product_type_id');
     const family_id = document.getElementById('family_id');
     const category_id = document.getElementById('category_id');
     const brand_id = document.getElementById('brand_id');
-    const color_id = document.getElementById('color_id');
+    // const color_id = document.getElementById('color_id');
     const size_id = document.getElementById('size_id');
 
 
@@ -251,8 +265,8 @@
     family_id.addEventListener('change', updateSKU);
     category_id.addEventListener('change', updateSKU);
     brand_id.addEventListener('change', updateSKU);
-    color_id.addEventListener('change', updateSKU);
-    size_id.addEventListener('change', updateSKU);
+    // color_id.addEventListener('change', updateSKU);
+    // size_id.addEventListener('change', updateSKU);
 
     // Function to update the SKU based on selected size and color
     function updateSKU() {
@@ -260,21 +274,31 @@
         const family = family_id.value;
         const category = category_id.value;
         const brand = brand_id.value;
-        const color = color_id.value;
-        const size = size_id.value;
+        // const color = color_id.value;
+        // const size = size_id.value;
 
-        const sku = 'SKU' + '-' + type + family + category + '-' + brand + color + size;
+        const sku = 'SKU' + '-' + type + family + category + '-' + brand;
         skuInput.value = sku;
     }
 
     // Initial call to update SKU when the page loads
     updateSKU();
+    // Get the input element
+    const price = document.getElementById('price');
+    // Add event listener for keyup event
+    price.addEventListener('keyup', function(event) {
+        // Get the input value
+        let inputValue = event.target.value;
+        // Remove any non-numeric characters except for the decimal point
+        inputValue = inputValue.replace(/[^0-9.]/g, '');
+        // Update the input field with the cleaned value
+        event.target.value = inputValue;
+    });
 
     $('#createForm').on('submit', function(e) {
         e.preventDefault();
         const sku = skuInput.value;
         var formData = new FormData($('#createForm')[0]);
-
         formData.append('sku', sku);
         formData.append('_method', 'POST');
 

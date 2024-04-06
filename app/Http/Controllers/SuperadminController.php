@@ -535,7 +535,7 @@ class SuperadminController extends Controller
                 if (!empty($item->url)) {
                     $item->url = Storage::url('product_images/' . $item->url);
                 } else {
-                    $item->url = '/storage/product_images/no-image.png'; // Replace 'default_image_url.jpg' with your default image URL
+                    $item->url = '/storage/product_images/no-image-2.png'; // Replace 'default_image_url.jpg' with your default image URL
                 }
                 return $item;
             });
@@ -576,6 +576,8 @@ class SuperadminController extends Controller
             'sku' => ['required'],
             'product_quantity' => ['required'],
             'price' => ['required'],
+            'color_id' => ['array'],
+            'size_id' => ['array'],
         ]);
 
         if ($validator->fails()) {
@@ -596,8 +598,8 @@ class SuperadminController extends Controller
                     'description' => $request->description,
                     'sku' => $request->sku,
                     'inventory' => $request->product_quantity,
-                    'color_id' => $request->color_id,
-                    'size_id' => $request->size_id,
+                    'color_id' => json_encode($request->color_id), // Encoding array to JSON
+                    'size_id' => json_encode($request->size_id), // Encoding array to JSON
                     'weight' => $request->weight,
                     'dimension' => $request->dimension,
                 ]);
@@ -642,6 +644,14 @@ class SuperadminController extends Controller
                         ]);
                     }
                 }
+                // return response()->json([
+                //     'status' => 200,
+                //     'message' => 'Product created successfully.',
+                //     'data' => [
+                //         'color_id' => $request->color_id,
+                //         'size_id' => $request->size_id,
+                //     ],
+                // ]);
             } catch (Exception $e) {
                 return response()->json([
                     'error' => 'error inserting'
@@ -662,6 +672,10 @@ class SuperadminController extends Controller
             ->where('products.id', '=', $request->id)
             ->whereNull('images.deleted_at')
             ->first();
+        if ($product) {
+            $colorArray = json_decode($product->color_id, true);
+            $sizeArray = json_decode($product->size_id, true);
+        }
         $prod_add_image = Product::join('product_images', 'products.id', '=', 'product_images.product_id')
             ->select('product_images.url')
             ->where('products.id', '=', $request->id)
@@ -674,7 +688,7 @@ class SuperadminController extends Controller
         $prod_type = ProductType::all();
         $color = Color::all();
         $size = Size::all();
-        return view('superadmin.product.products.product_form', compact('prod_add_image', 'product', 'brand', 'category', 'family', 'prod_type', 'color', 'size'));
+        return view('superadmin.product.products.product_form', compact('prod_add_image', 'product', 'brand', 'category', 'family', 'prod_type', 'color', 'size', 'colorArray', 'sizeArray'));
     }
     public function updateproduct(Request $request, $id)
     {
@@ -695,11 +709,12 @@ class SuperadminController extends Controller
                 'description' => $request->description,
                 'sku' => $request->sku,
                 'inventory' => $request->product_quantity,
-                'color_id' => $request->color_id,
-                'size_id' => $request->size_id,
+                'color_id' => json_encode($request->color_id), // Encoding array to JSON
+                'size_id' => json_encode($request->size_id), // Encoding array to JSON
                 'weight' => $request->weight,
                 'dimension' => $request->dimension,
             ]);
+
             // $product->save();
             $price = Price::where(['product_id' => $request->id])->first();
             $price->update([
@@ -748,9 +763,12 @@ class SuperadminController extends Controller
                 }
             }
         }
-
         return response()->json([
-            'success' => 'product updated successfully'
+            'success' => 'product updated successfully',
+            'data' => [
+                'color_id' => $request->color_id,
+                'size_id' => $request->size_id,
+            ],
         ]);
     }
     public function deleteproduct($id)
