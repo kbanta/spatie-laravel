@@ -28,8 +28,8 @@ return new class extends Migration
             $table->string('inventory');
             $table->integer('weight')->nullable();
             $table->string('dimension')->nullable();
-            $table->integer('color_id')->nullable();
-            $table->integer('size_id')->nullable();
+            $table->text('color_id')->nullable();
+            $table->text('size_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
